@@ -12,14 +12,19 @@ declare global {
   var mongoose: MongooseConnection | undefined;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
+async function connectDB(): Promise<typeof mongoose> {
+  const MONGODB_URI = process.env.MONGODB_URI;
+  
+  if (!MONGODB_URI) {
+    throw new Error(
+      'Please define the MONGODB_URI environment variable inside .env.local'
+    );
+  }
 
-// Validate that the connection string exists
-if (!MONGODB_URI) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local'
-  );
-}
+  // Return cached connection if available
+  if (cached.conn) {
+    return cached.conn;
+  }
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
