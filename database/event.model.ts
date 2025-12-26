@@ -115,13 +115,21 @@ const EventSchema = new Schema<IEvent>(
 EventSchema.pre('save', function (next) {
   // Generate slug from title if title is modified or document is new
   if (this.isModified('title') || this.isNew) {
-    this.slug = this.title
+    const baseSlug = this.title
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, '') // Remove special characters
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
       .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    
+    // Append short unique suffix for new documents
+    if (this.isNew) {
+      const suffix = this._id.toString().slice(-6);
+      this.slug = `${baseSlug}-${suffix}`;
+    } else {
+      this.slug = baseSlug;
+    }
   }
 
   // Normalize date to ISO format if modified
