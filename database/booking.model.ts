@@ -47,12 +47,13 @@ BookingSchema.pre('save', async function (next) {
         return next(new Error('Referenced event does not exist'));
       }
     } catch (error) {
-      if (error instanceof Error && error.message === 'Referenced event does not exist') {
-        return next(error);
+      if (error instanceof mongoose.Error.MissingSchemaError) {
+        // Event model not registered yet, skip validation
+        // This allows models to be registered in any order
+        return next();
       }
-      // If Event model doesn't exist yet, skip validation
-      // This allows models to be registered in any order
-      return next();
+      // Re-throw all other errors (including "Referenced event does not exist")
+      return next(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
