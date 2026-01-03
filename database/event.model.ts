@@ -26,7 +26,7 @@ const EventSchema = new Schema<IEvent>(
       type: String,
       required: [true, 'Title is required'],
       trim: true,
-      maxlength: [100, 'Title cannot exceed 100 characters'],  
+      maxlength: [100, 'Title cannot exceed 100 characters'],
     },
     slug: {
       type: String,
@@ -38,13 +38,13 @@ const EventSchema = new Schema<IEvent>(
       type: String,
       required: [true, 'Description is required'],
       trim: true,
-      maxlength: [1000, 'Description cannot exceed 1000 characters'],    
+      maxlength: [1000, 'Description cannot exceed 1000 characters'],
     },
     overview: {
       type: String,
       required: [true, 'Overview is required'],
       trim: true,
-      maxlength: [500, 'Overview cannot exceed 500 characters'],      
+      maxlength: [500, 'Overview cannot exceed 500 characters'],
     },
     image: {
       type: String,
@@ -74,10 +74,10 @@ const EventSchema = new Schema<IEvent>(
     mode: {
       type: String,
       required: [true, 'Mode is required'],
-      enum: { 
+      enum: {
         values: ['online', 'offline', 'hybrid'],
-        messages: 'Mode must be either online, offline, or hybrid'
-      },                  
+        message: 'Mode must be either online, offline, or hybrid'
+      },
     },
     audience: {
       type: String,
@@ -112,7 +112,7 @@ const EventSchema = new Schema<IEvent>(
 );
 
 // Pre-save hook for slug generation and date/time normalization
-EventSchema.pre('save', function (next) {
+EventSchema.pre('save', async function (this: any) {
   // Generate slug from title if title is modified or document is new
   if (this.isModified('title') || this.isNew) {
     const baseSlug = this.title
@@ -122,7 +122,7 @@ EventSchema.pre('save', function (next) {
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
       .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-    
+
     // Append short unique suffix for new documents
     if (this.isNew) {
       const suffix = this._id.toString().slice(-6);
@@ -137,12 +137,12 @@ EventSchema.pre('save', function (next) {
     try {
       const parsedDate = new Date(this.date);
       if (isNaN(parsedDate.getTime())) {
-        return next(new Error('Invalid date format'));
+        throw new Error('Invalid date format');
       }
       // Store as ISO 8601 date string (YYYY-MM-DD)
       this.date = parsedDate.toISOString().split('T')[0];
     } catch (error) {
-      return next(new Error('Invalid date format'));
+      throw new Error('Invalid date format');
     }
   }
 
@@ -150,18 +150,13 @@ EventSchema.pre('save', function (next) {
   if (this.isModified('time')) {
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(this.time)) {
-      return next(new Error('Time must be in HH:MM format (24-hour)'));
+      throw new Error('Time must be in HH:MM format (24-hour)');
     }
     // Ensure two-digit format (e.g., 9:30 becomes 09:30)
     const [hours, minutes] = this.time.split(':');
     this.time = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
   }
-
-  next();
 });
-
-// Create unique index on slug
-EventSchema.index({ slug: 1 }, { unique: true });
 
 // Prevent model recompilation in development
 const Event: Model<IEvent> =
