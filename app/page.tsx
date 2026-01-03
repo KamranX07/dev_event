@@ -8,8 +8,19 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const Page = async () => {
   'use cache';
   cacheLife('hours')
-  const response = await fetch(`${BASE_URL}/api/events`);
-  const { events } = await response.json();
+  
+  let events = [];
+  try {
+    const response = await fetch(`${BASE_URL}/api/events`);
+    if (!response.ok) {
+      console.error(`Failed to fetch events: ${response.status}`);
+    } else {
+      const data = await response.json();
+      events = data.events ?? [];
+    }
+  } catch (error) {
+    console.error('Error fetching events:', error);
+  }
 
   return (
     <section>
