@@ -38,7 +38,7 @@ export async function GET(
       );
     }
 
-    const slug = decodeURIComponent(rawSlug.trim().toLowerCase());
+    const slug = decodeURIComponent(rawSlug).trim().toLowerCase();
 
     // Optional: enforce a conservative slug pattern
     const slugPattern = /^[a-z0-9-]+$/;
