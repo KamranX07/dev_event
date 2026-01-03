@@ -73,6 +73,7 @@ export async function GET() {
 
         return NextResponse.json({ message: 'Events Fetched Successfully', events }, { status: 200 });
     } catch (e) {
-        return NextResponse.json({ message: 'Event Fetching Failed', error: e }, { status: 500 });
+        console.error(e);
+        return NextResponse.json({ message: 'Event Fetching Failed', error: e instanceof Error ? e.message : 'Unknown' }, { status: 500 });
     }
 }
