@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 // TypeScript interface for Booking document
 export interface IBooking extends Document {
   eventId: Types.ObjectId;
+  slug: string;
   email: string;
   createdAt: Date;
   updatedAt: Date;
@@ -14,6 +15,11 @@ const BookingSchema = new Schema<IBooking>(
       type: Schema.Types.ObjectId,
       ref: 'Event',
       required: [true, 'Event ID is required'],
+    },
+    slug: {
+      type: String,
+      required: [true, 'Event slug is required'],
+      trim: true,
     },
     email: {
       type: String,
